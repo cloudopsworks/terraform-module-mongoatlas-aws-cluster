@@ -77,7 +77,7 @@ include "root" {
 }
 
 terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-cluster.git?ref=v1.2.0"
+  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-cluster.git?ref=v1.2.1"
 }
 
 inputs = {
@@ -94,11 +94,12 @@ inputs = {
       enabled:                  true     # (Optional) Create Atlas admin user. Default: false
       username:                 "admin"  # (Optional) Username. Default: auto-generated
       auth_database:            "admin"  # (Optional) Authentication database. Default: "admin"
+      use_external_rotation:    false    # (Optional) When true, an external rotation manager (e.g. Lambda) handles the password. Default: false
       kms_key_id:               ""       # (Optional) AWS KMS key ARN/Alias for Secrets Manager encryption
-      rotation_lambda_name:     ""       # (Optional) Lambda function name for Secrets Manager rotation
+      rotation_lambda_name:     ""       # (Optional) Lambda function name for Secrets Manager rotation. Required when use_external_rotation is true.
       rotation_period:          90       # (Optional) Lambda rotation period in days. Default: 90
       rotation_duration:        "1h"     # (Optional) Lambda rotation duration. Default: "1h"
-      rotate_immediately:       true     # (Optional) Rotate secret on first creation. Default: true
+      rotate_immediately:       true     # (Optional) Rotate secret on first creation (AWS Secrets Manager). Default: true
       password_rotation_period: 90       # (Optional) Terraform-managed rotation period in days. Default: 90
 
     regions:
@@ -263,7 +264,7 @@ Available targets:
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cluster"></a> [cluster](#module\_cluster) | git::https://github.com/cloudopsworks/terraform-module-mongoatlas-cluster.git | v1.2.0 |
+| <a name="module_cluster"></a> [cluster](#module\_cluster) | git::https://github.com/cloudopsworks/terraform-module-mongoatlas-cluster.git | v1.2.1 |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 
 ## Resources
