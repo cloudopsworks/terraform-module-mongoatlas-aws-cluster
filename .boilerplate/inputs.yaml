@@ -1,5 +1,11 @@
 # Module configuration
 
+name_prefix: ""  # (Optional) Prefix for the name of the resources. Default: ""
+name: ""         # (Required) Name of the MongoDB Atlas cluster resource.
+project_id: ""   # (Optional) The Atlas project ID where the cluster will be created. Use either project_id or project_name.
+project_name: "" # (Optional) The Atlas project name where the cluster will be created. Use either project_id or project_name.
+run_hoop: false  # (Optional) Run HOOP CLI via null_resource local-exec. Requires HOOP CLI installed and authenticated on the runner. Default: false
+
 # settings:
 #   cluster_type: "REPLICASET"         # (Optional) REPLICASET | SHARDED | GEOSHARDED. Default: "REPLICASET"
 #   major_version: 7.0                 # (Optional) MongoDB major version. Default: null
@@ -73,6 +79,7 @@
 #     - backing_provider: "AWS"      # (Optional) AWS | GCP | AZURE. Default: null
 #       provider: "AWS"              # (Optional) AWS | GCP | AZURE | TENANT. Default: "TENANT"
 #       region: "US_EAST_1"          # (Optional) Atlas region. Default: computed from AWS region
+#         # Note: AWS region (e.g. "us-east-1") is transformed to Atlas format "US_EAST_1"
 #       priority: 7                  # (Optional) Electable node priority 1-7. Default: 7
 #       electable:
 #         size: "M10"                # (Optional) Instance size (e.g. M10, M20, M30, M40). Default: "M2"
