@@ -8,7 +8,7 @@
 #
 
 module "cluster" {
-  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-cluster.git?ref=feature/refactor-generic-no-cloud-deps"
+  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-cluster.git?ref=v1.2.0-refactor-generic-no-cloud-deps.1"
 
   is_hub       = var.is_hub
   spoke_def    = var.spoke_def
