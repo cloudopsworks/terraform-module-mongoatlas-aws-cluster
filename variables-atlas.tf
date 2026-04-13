@@ -1,5 +1,38 @@
-# Module configuration
+##
+# (c) 2021-2026
+#     Cloud Ops Works LLC - https://cloudops.works/
+#     Find us on:
+#       GitHub: https://github.com/cloudopsworks
+#       WebSite: https://cloudops.works
+#     Distributed Under Apache v2.0 License
+#
 
+variable "name_prefix" {
+  description = "Prefix for the name of the resources"
+  type        = string
+  default     = ""
+}
+
+variable "name" {
+  description = "Name of the resource"
+  type        = string
+  default     = ""
+}
+
+variable "project_id" {
+  description = "(optional) The ID of the project where the cluster will be created"
+  type        = string
+  default     = ""
+}
+
+variable "project_name" {
+  description = "(optional) The name of the project where the cluster will be created"
+  type        = string
+  default     = ""
+}
+
+##
+# Variable entries as YAML
 # settings:
 #   cluster_type: "REPLICASET"         # (Optional) REPLICASET | SHARDED | GEOSHARDED. Default: "REPLICASET"
 #   major_version: 7.0                 # (Optional) MongoDB major version. Default: null
@@ -105,3 +138,14 @@
 #     enabled: false                 # (Optional) Configure HOOP connection resource. Default: false
 #     agent: "hoop-agent-name"       # (Required when enabled) HOOP agent name
 #     tags: []                       # (Optional) Additional HOOP connection tags. Default: []
+variable "settings" {
+  description = "Settings for the MongoDB Atlas cluster and AWS integrations"
+  type        = any
+  default     = {}
+}
+
+variable "run_hoop" {
+  description = "Run hoop with agent via null_resource local-exec. Requires HOOP CLI to be installed and authenticated on the Terraform runner."
+  type        = bool
+  default     = false
+}

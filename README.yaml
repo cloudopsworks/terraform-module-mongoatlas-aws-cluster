@@ -1,37 +1,202 @@
-name: Terraform Transit Gateway Module
+name: Terraform MongoDB Atlas Cluster with AWS Integration
 #logo: logo/logo.jpg
 badges:
   - name: Latest Release
-    image: https://img.shields.io/github/release/<owner/repo>.svg?style=for-the-badge
-    url: https://github.com/<owner/repo>/releases/latest
+    image: https://img.shields.io/github/v/release/cloudopsworks/terraform-module-mongoatlas-aws-cluster.svg?style=for-the-badge
+    url: https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-cluster/releases/latest
   - name: Last Updated
-    image: https://img.shields.io/github/last-commit/<owner/repo>.svg?style=for-the-badge
-    url: https://github.com/<owner/repo>/commits
+    image: https://img.shields.io/github/last-commit/cloudopsworks/terraform-module-mongoatlas-aws-cluster.svg?style=for-the-badge
+    url: https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-cluster/commits
 
 license: "APACHE2"
 
 copyrights:
   - name: "Cloud Ops Works LLC"
     url: "https://cloudopsworks.co"
-    year: "2026"
+    year: "2024"
 
-github_repo: <owner/repo>
+github_repo: cloudopsworks/terraform-module-mongoatlas-aws-cluster
 
 description: |-
-  <description>
+  Terraform module for provisioning MongoDB Atlas clusters with AWS provider integration.
+  Wraps the generic [`terraform-module-mongoatlas-cluster`](https://github.com/cloudopsworks/terraform-module-mongoatlas-cluster)
+  and adds AWS-specific features: Secrets Manager credential storage, KMS encryption,
+  Lambda-based password rotation, and HOOP connection management.
 
 # Introduction to the project
 introduction: |-
-#  This is an introduction.
+  This module is the AWS-specific wrapper for the generic MongoDB Atlas cluster module.
+  It handles all AWS provider interactions, including:
+
+  - MongoDB Atlas cluster provisioning (delegated to the generic module)
+  - AWS Secrets Manager for secure admin credential storage
+  - Optional AWS KMS encryption for the secret
+  - Optional AWS Lambda-based password rotation via Secrets Manager rotation
+  - HOOP connection configuration referencing the Secrets Manager secret
+  - Automatic region detection via `data.aws_region.current`
+
+  The cluster admin credentials are exposed both via the `cluster_secrets_credentials`
+  output (the Secrets Manager secret name) and are stored in JSON format inside the secret.
 
 # How to use this project
 usage: |-
+  ### Terragrunt Usage
+
+  ```hcl
+  # terragrunt.hcl
+  include "root" {
+    path = find_in_parent_folders()
+  }
+
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-cluster.git?ref=v1.2.0"
+  }
+
+  inputs = {
+    project_id  = "your-atlas-project-id"
+    name        = "my-cluster"
+
+    settings = {
+      cluster_type:  "REPLICASET"      # (Optional) REPLICASET | SHARDED | GEOSHARDED. Default: "REPLICASET"
+      major_version: 7.0               # (Optional) MongoDB major version. Default: null
+      termination_protection: true     # (Optional) Enable termination protection. Default: null
+      version_release: "LTS"           # (Optional) LTS | CONTINUOUS. Default: "LTS"
+
+      admin_user:
+        enabled:                  true     # (Optional) Create Atlas admin user. Default: false
+        username:                 "admin"  # (Optional) Username. Default: auto-generated
+        auth_database:            "admin"  # (Optional) Authentication database. Default: "admin"
+        kms_key_id:               ""       # (Optional) AWS KMS key ARN/Alias for Secrets Manager encryption
+        rotation_lambda_name:     ""       # (Optional) Lambda function name for Secrets Manager rotation
+        rotation_period:          90       # (Optional) Lambda rotation period in days. Default: 90
+        rotation_duration:        "1h"     # (Optional) Lambda rotation duration. Default: "1h"
+        rotate_immediately:       true     # (Optional) Rotate secret on first creation. Default: true
+        password_rotation_period: 90       # (Optional) Terraform-managed rotation period in days. Default: 90
+
+      regions:
+        - provider:          "AWS"        # (Optional) AWS | GCP | AZURE | TENANT. Default: "TENANT"
+          backing_provider:  "AWS"        # (Optional) Backing provider. Default: null
+          region:            "US_EAST_1"  # (Optional) Atlas region. Default: from AWS region
+          priority:          7            # (Optional) Node priority 1-7. Default: 7
+          electable:
+            size:  "M10"    # (Optional) Instance size. Default: "M2"
+            count: 3        # (Optional) Node count. Default: null
+
+      backup:
+        enabled:             true  # (Optional) Enable cloud backup. Default: false
+        hour_of_day:         2     # (Optional) Backup hour 0-23. Default: 0
+        restore_window_days: 7     # (Optional) Restore window in days. Default: 1
+        daily:
+          retention_value: 7       # (Optional) Daily retention in days. Default: 7
+        weekly:
+          retention_value: 4       # (Optional) Weekly retention in weeks. Default: 4
+        monthly:
+          retention_value: 12      # (Optional) Monthly retention in months. Default: 12
+
+      hoop:
+        enabled: false             # (Optional) Configure HOOP connection. Default: false
+        agent:   "hoop-agent"      # (Required when enabled) HOOP agent name
+        tags:    []                # (Optional) Additional HOOP tags. Default: []
+    }
+
+    run_hoop = false  # (Optional) Execute HOOP CLI command via null_resource. Default: false
+  }
+  ```
 
 # Example usage
 examples: |-
+  ### Basic Production Cluster
+
+  ```hcl
+  inputs = {
+    project_id = "your-atlas-project-id"
+    name       = "prod-cluster"
+
+    settings = {
+      cluster_type           = "REPLICASET"
+      major_version          = 7.0
+      termination_protection = true
+      admin_user = {
+        enabled  = true
+        username = "prod-admin"
+      }
+      regions = [{
+        provider         = "AWS"
+        backing_provider = "AWS"
+        region           = "US_EAST_1"
+        priority         = 7
+        electable = {
+          size  = "M30"
+          count = 3
+        }
+      }]
+    }
+  }
+  ```
+
+  ### Cluster with Lambda Password Rotation
+
+  ```hcl
+  inputs = {
+    project_id = "your-atlas-project-id"
+    name       = "secure-cluster"
+
+    settings = {
+      admin_user = {
+        enabled              = true
+        kms_key_id           = "alias/my-kms-key"
+        rotation_lambda_name = "atlas-password-rotation"
+        rotation_period      = 30
+        rotation_duration    = "1h"
+        rotate_immediately   = true
+      }
+      regions = [{ ... }]
+    }
+  }
+  ```
+
+  ### Cluster with HOOP Integration
+
+  ```hcl
+  inputs = {
+    project_id = "your-atlas-project-id"
+    name       = "hoop-cluster"
+    run_hoop   = true
+
+    settings = {
+      admin_user = { enabled = true }
+      hoop = {
+        enabled = true
+        agent   = "my-hoop-agent"
+        tags    = ["env:production", "team:platform"]
+      }
+      regions = [{ ... }]
+    }
+  }
+  ```
 
 # How to get started quickly
 quickstart: |-
+  1. Configure AWS and MongoDB Atlas credentials:
+     ```bash
+     export AWS_REGION="us-east-1"
+     export MONGODB_ATLAS_PUBLIC_KEY="your_public_key"
+     export MONGODB_ATLAS_PRIVATE_KEY="your_private_key"
+     ```
+
+  2. Create a Terragrunt configuration using the usage example above.
+
+  3. Initialize and apply:
+     ```bash
+     terraform init && terraform apply
+     ```
+
+  4. Retrieve credentials from Secrets Manager:
+     ```bash
+     aws secretsmanager get-secret-value \
+       --secret-id $(terraform output -raw cluster_secrets_credentials) \
+       --query SecretString --output text | jq .
+     ```
 
 include:
   - "docs/targets.md"
