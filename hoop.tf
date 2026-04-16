@@ -8,26 +8,44 @@
 #
 
 locals {
-  hoop_tags = length(try(var.settings.hoop.tags, [])) > 0 ? join(" ", [for v in var.settings.hoop.tags : "--tags \"${v}\""]) : ""
-  hoop_connection = try(var.settings.hoop.enabled, false) ? (<<EOT
-hoop admin create connection mongo-db-${lower(module.cluster.cluster_name)}-ow \
-  --agent ${var.settings.hoop.agent} \
-  --type database/mongodb \
-  -e "CONNECTION_STRING=_aws:${aws_secretsmanager_secret.atlas_cred[0].name}:connection_string" \
-  --overwrite \
-  ${local.hoop_tags}
-EOT
-  ) : null
+  hoop_enabled       = try(var.settings.hoop.enabled, false) && try(var.settings.admin_user.enabled, false)
+  hoop_secret_prefix = try(var.settings.hoop.community, true) ? "_aws" : "_envs/aws"
+  hoop_secret_sep    = try(var.settings.hoop.community, true) ? ":" : "#"
+  hoop_use_private   = try(var.settings.hoop.use_private_endpoint, false)
+  hoop_conn_str_key  = local.hoop_use_private ? "private_connection_string" : "connection_string"
 }
 
-resource "null_resource" "hoop_connection" {
-  count = local.hoop_connection != null && var.run_hoop ? 1 : 0
-  provisioner "local-exec" {
-    command     = local.hoop_connection
-    interpreter = ["bash", "-c"]
+output "hoop_connections" {
+  description = <<-EOD
+    Hoop connection definition for the cluster admin user. Pass directly as the `connections`
+    input to terraform-module-hoop-connection. Returns null when hoop.enabled or
+    admin_user.enabled is false.
+    Supports community (_aws:) and enterprise (_envs/aws/) secret formats via settings.hoop.community.
+    AWS is the only cloud provider supported by terraform-module-hoop-connection.
+  EOD
+  value = local.hoop_enabled ? {
+    "admin" = {
+      name           = "mongo-db-${lower(module.cluster.cluster_name)}-admin"
+      agent_id       = var.settings.hoop.agent_id
+      type           = "database"
+      subtype        = "mongodb"
+      tags           = try(var.settings.hoop.tags, {})
+      access_control = toset(try(var.settings.hoop.access_control, []))
+      access_modes = {
+        connect  = "enabled"
+        exec     = "enabled"
+        runbooks = "enabled"
+        schema   = "enabled"
+      }
+      import  = try(var.settings.hoop.import, false)
+      secrets = {
+        "envvar:CONNECTION_STRING" = "${local.hoop_secret_prefix}${local.hoop_secret_sep}${aws_secretsmanager_secret.atlas_cred[0].name}${local.hoop_secret_sep}${local.hoop_conn_str_key}"
+      }
+    }
+  } : null
+
+  precondition {
+    condition     = !local.hoop_enabled || try(var.settings.hoop.agent_id, "") != ""
+    error_message = "settings.hoop.agent_id must be set (as a Hoop agent UUID) when settings.hoop.enabled is true."
   }
-}
-
-output "hoop_connection" {
-  value = local.hoop_connection
 }

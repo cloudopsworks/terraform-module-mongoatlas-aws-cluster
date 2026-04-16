@@ -4,7 +4,7 @@ name_prefix: ""  # (Optional) Prefix for the name of the resources. Default: ""
 name: ""         # (Required) Name of the MongoDB Atlas cluster resource.
 project_id: ""   # (Optional) The Atlas project ID where the cluster will be created. Use either project_id or project_name.
 project_name: "" # (Optional) The Atlas project name where the cluster will be created. Use either project_id or project_name.
-run_hoop: false  # (Optional) Run HOOP CLI via null_resource local-exec. Requires HOOP CLI installed and authenticated on the runner. Default: false
+run_hoop: false  # (Deprecated) No-op. Use hoop_connections output with terraform-module-hoop-connection instead. Default: false.
 
 # settings:
 #   cluster_type: "REPLICASET"         # (Optional) REPLICASET | SHARDED | GEOSHARDED. Default: "REPLICASET"
@@ -127,6 +127,10 @@ run_hoop: false  # (Optional) Run HOOP CLI via null_resource local-exec. Require
 #             count: 3
 #             disk_size: 10
 #   hoop:
-#     enabled: false                 # (Optional) Configure HOOP connection resource. Default: false
-#     agent: "hoop-agent-name"       # (Required when enabled) HOOP agent name
-#     tags: []                       # (Optional) Additional HOOP connection tags. Default: []
+#     enabled: false                              # (Optional) Enable hoop_connections output. Default: false.
+#     community: true                             # (Optional) true=community (_aws:), false=enterprise (_envs/aws/). Default: true.
+#     agent_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxx"  # (Required when enabled) Hoop.dev agent UUID. Replaces deprecated `agent`.
+#     tags: {}                                    # (Optional) Tags map for the Hoop connection. Default: {}.
+#     access_control: []                          # (Optional) Access control group list. Default: [].
+#     use_private_endpoint: false                 # (Optional) Use private_connection_string key. Default: false.
+#     import: false                               # (Optional) Import existing Hoop connection instead of creating. Default: false.
