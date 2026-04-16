@@ -25,7 +25,7 @@ output "hoop_connections" {
   EOD
   value = local.hoop_enabled ? {
     "admin" = {
-      name           = "mongo-db-${lower(module.cluster.cluster_name)}-admin"
+      name           = "mongo-db-${lower(module.cluster.cluster_name)}-ow"
       agent_id       = var.settings.hoop.agent_id
       type           = "database"
       subtype        = "mongodb"
@@ -37,7 +37,7 @@ output "hoop_connections" {
         runbooks = "enabled"
         schema   = "enabled"
       }
-      import  = try(var.settings.hoop.import, false)
+      import = try(var.settings.hoop.import, false)
       secrets = {
         "envvar:CONNECTION_STRING" = "${local.hoop_secret_prefix}${local.hoop_secret_sep}${aws_secretsmanager_secret.atlas_cred[0].name}${local.hoop_secret_sep}${local.hoop_conn_str_key}"
       }

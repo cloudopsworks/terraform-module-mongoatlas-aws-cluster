@@ -5,7 +5,6 @@
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.35 |
 | <a name="requirement_mongodbatlas"></a> [mongodbatlas](#requirement\_mongodbatlas) | ~> 2.1 |
-| <a name="requirement_null"></a> [null](#requirement\_null) | ~> 3.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.4 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13 |
 
@@ -14,7 +13,6 @@
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 6.40.0 |
-| <a name="provider_null"></a> [null](#provider\_null) | 3.2.4 |
 
 ## Modules
 
@@ -31,7 +29,6 @@
 | [aws_secretsmanager_secret_rotation.user](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_rotation) | resource |
 | [aws_secretsmanager_secret_version.atlas_cred](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version) | resource |
 | [aws_secretsmanager_secret_version.atlas_cred_rotated](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version) | resource |
-| [null_resource.hoop_connection](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [aws_lambda_function.rotation_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lambda_function) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
@@ -46,7 +43,7 @@
 | <a name="input_org"></a> [org](#input\_org) | Organization details | <pre>object({<br/>    organization_name = string<br/>    organization_unit = string<br/>    environment_type  = string<br/>    environment_name  = string<br/>  })</pre> | n/a | yes |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | (optional) The ID of the project where the cluster will be created | `string` | `""` | no |
 | <a name="input_project_name"></a> [project\_name](#input\_project\_name) | (optional) The name of the project where the cluster will be created | `string` | `""` | no |
-| <a name="input_run_hoop"></a> [run\_hoop](#input\_run\_hoop) | Run hoop with agent via null\_resource local-exec. Requires HOOP CLI to be installed and authenticated on the Terraform runner. | `bool` | `false` | no |
+| <a name="input_run_hoop"></a> [run\_hoop](#input\_run\_hoop) | DEPRECATED: No-op. Previously executed the Hoop CLI via null\_resource local-exec. Use the hoop\_connections output with terraform-module-hoop-connection instead. | `bool` | `false` | no |
 | <a name="input_settings"></a> [settings](#input\_settings) | Settings for the MongoDB Atlas cluster and AWS integrations | `any` | `{}` | no |
 | <a name="input_spoke_def"></a> [spoke\_def](#input\_spoke\_def) | Spoke ID Number, must be a 3 digit number | `string` | `"001"` | no |
 
@@ -63,4 +60,4 @@
 | <a name="output_cluster_server_type"></a> [cluster\_server\_type](#output\_cluster\_server\_type) | n/a |
 | <a name="output_cluster_state"></a> [cluster\_state](#output\_cluster\_state) | n/a |
 | <a name="output_cluster_version"></a> [cluster\_version](#output\_cluster\_version) | n/a |
-| <a name="output_hoop_connection"></a> [hoop\_connection](#output\_hoop\_connection) | n/a |
+| <a name="output_hoop_connections"></a> [hoop\_connections](#output\_hoop\_connections) | Hoop connection definition for the cluster admin user. Pass directly as the `connections`<br/>input to terraform-module-hoop-connection. Returns null when hoop.enabled or<br/>admin\_user.enabled is false.<br/>Supports community (\_aws:) and enterprise (\_envs/aws/) secret formats via settings.hoop.community.<br/>AWS is the only cloud provider supported by terraform-module-hoop-connection. |

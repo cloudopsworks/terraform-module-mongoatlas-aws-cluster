@@ -95,12 +95,17 @@ usage: |-
           retention_value: 12      # (Optional) Monthly retention in months. Default: 12
 
       hoop:
-        enabled: false             # (Optional) Configure HOOP connection. Default: false
-        agent:   "hoop-agent"      # (Required when enabled) HOOP agent name
-        tags:    []                # (Optional) Additional HOOP tags. Default: []
+        enabled:              false                              # (Optional) Enable hoop_connections output. Default: false
+        agent_id:             "xxxxxxxx-xxxx-xxxx-xxxx-xxxx"   # (Required when enabled) Hoop.dev agent UUID
+        community:            true                              # (Optional) true=community (_aws:), false=enterprise (_envs/aws/). Default: true
+        tags:                 {}                                # (Optional) Tags map for the Hoop connection. Default: {}
+        access_control:       []                                # (Optional) Access control group list. Default: []
+        use_private_endpoint: false                             # (Optional) Use private_connection_string. Default: false
+        import:               false                             # (Optional) Import existing connection. Default: false
     }
 
-    run_hoop = false  # (Optional) Execute HOOP CLI command via null_resource. Default: false
+    # hoop_connections output produces a connection named "mongo-db-<cluster-name>-ow"
+    # Pass it directly as `connections` input to terraform-module-hoop-connection.
   }
   ```
 
@@ -162,18 +167,20 @@ examples: |-
   inputs = {
     project_id = "your-atlas-project-id"
     name       = "hoop-cluster"
-    run_hoop   = true
 
     settings = {
       admin_user = { enabled = true }
       hoop = {
-        enabled = true
-        agent   = "my-hoop-agent"
-        tags    = ["env:production", "team:platform"]
+        enabled   = true
+        agent_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        community = true
+        tags      = { "env" = "production", "team" = "platform" }
       }
       regions = [{ ... }]
     }
   }
+  # The hoop_connections output will expose a connection named:
+  # "mongo-db-<cluster-name>-ow" for use with terraform-module-hoop-connection.
   ```
 
 # How to get started quickly
