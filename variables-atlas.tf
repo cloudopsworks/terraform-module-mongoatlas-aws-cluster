@@ -154,9 +154,13 @@ variable "project_name" {
 #             count: 3
 #             disk_size: 10
 #   hoop:
-#     enabled: false                 # (Optional) Configure HOOP connection resource. Default: false
-#     agent: "hoop-agent-name"       # (Required when enabled) HOOP agent name
-#     tags: []                       # (Optional) Additional HOOP connection tags. Default: []
+#     enabled: false                              # (Optional) Enable hoop_connections output. Default: false.
+#     community: true                             # (Optional) true=community (_aws:), false=enterprise (_envs/aws/). Default: true.
+#     agent_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxx"  # (Required when enabled) Hoop.dev agent UUID. Replaces deprecated `agent`.
+#     tags: {}                                    # (Optional) Tags map for the Hoop connection. Default: {}.
+#     access_control: []                          # (Optional) Access control group list. Default: [].
+#     use_private_endpoint: false                 # (Optional) Use private_connection_string key. Default: false.
+#     import: false                               # (Optional) Import existing Hoop connection instead of creating. Default: false.
 variable "settings" {
   description = "Settings for the MongoDB Atlas cluster and AWS integrations"
   type        = any
@@ -164,7 +168,7 @@ variable "settings" {
 }
 
 variable "run_hoop" {
-  description = "Run hoop with agent via null_resource local-exec. Requires HOOP CLI to be installed and authenticated on the Terraform runner."
+  description = "DEPRECATED: No-op. Previously executed the Hoop CLI via null_resource local-exec. Use the hoop_connections output with terraform-module-hoop-connection instead."
   type        = bool
   default     = false
 }
